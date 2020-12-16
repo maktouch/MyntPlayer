@@ -3,6 +3,8 @@ import { useDebounce } from "use-debounce";
 import useFetch from "react-fetch-hook";
 import { ScaleLoader } from "react-spinners";
 import { usePlaylist, Video } from "components/Atoms/Playlist";
+import { getEndpoint } from "components/YoutubeAPI";
+import cx from "classnames";
 
 function Input(props) {
   return (
@@ -15,20 +17,30 @@ function Input(props) {
   );
 }
 
-function Item(props: { video: Video; onAppend: () => void }) {
+function Item(props: {
+  video: Video;
+  onAppend: () => void;
+  isDuplicate: boolean;
+}) {
   const { appendVideo } = usePlaylist();
-  const { onAppend } = props;
+  const { onAppend, isDuplicate } = props;
   const title = props.video.snippet.title;
   const image = props.video.snippet.thumbnails.default.url;
 
   const onClick = (e) => {
+    if (isDuplicate) {
+      return;
+    }
     appendVideo(props.video);
     onAppend?.();
   };
 
   return (
     <li
-      className="p-2 flex w-full hover:bg-gray-200 rounded-sm cursor-pointer"
+      className={cx("p-2 flex w-full hover:bg-gray-200 rounded-sm", {
+        "text-gray-300": isDuplicate,
+        "cursor-pointer text-gray-700": !isDuplicate,
+      })}
       onClick={onClick}
     >
       <img
@@ -38,7 +50,7 @@ function Item(props: { video: Video; onAppend: () => void }) {
       />
       <div className="mx-3 w-full">
         <p
-          className="text-sm font-medium text-gray-700 "
+          className="text-sm font-medium "
           dangerouslySetInnerHTML={{ __html: title }}
         />
       </div>
@@ -47,19 +59,13 @@ function Item(props: { video: Video; onAppend: () => void }) {
 }
 
 export function Search(props) {
+  const { currentIds } = usePlaylist();
   const [actual, setQuery] = useState("");
   const [query] = useDebounce(actual.trim(), 500);
 
-  const endpoint = new URL("https://youtube.googleapis.com/youtube/v3/search");
-  endpoint.searchParams.append("part", "snippet");
+  const endpoint = getEndpoint();
   endpoint.searchParams.append("maxResults", "10");
   endpoint.searchParams.append("q", query);
-  endpoint.searchParams.append("type", "video");
-  endpoint.searchParams.append("videoEmbeddable", "true");
-  endpoint.searchParams.append(
-    "key",
-    "AIzaSyCA-nA7YQ5RdBY9MsaqbuhwyifQYzsStN4"
-  );
 
   const validQuery = actual.length > 3 && query.length > 3;
 
@@ -72,6 +78,8 @@ export function Search(props) {
   const onAppend = useCallback(function () {
     setQuery("");
   }, []);
+
+  const items = data?.items || [];
 
   return (
     <>
@@ -90,16 +98,21 @@ export function Search(props) {
               </div>
             )}
 
-            {!loading && data?.items?.length === 0 && (
+            {!loading && items.length === 0 && (
               <div className="p-5 text-gray-800">
                 No results found, try another query
               </div>
             )}
 
             {!loading &&
-              data?.items?.length > 0 &&
-              data?.items?.map((item) => (
-                <Item key={item.etag} video={item} onAppend={onAppend} />
+              items.length > 0 &&
+              items.map((item) => (
+                <Item
+                  key={item.etag}
+                  video={item}
+                  onAppend={onAppend}
+                  isDuplicate={currentIds.current.includes(item.id.videoId)}
+                />
               ))}
           </div>
         </div>
