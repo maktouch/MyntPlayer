@@ -3,7 +3,7 @@ import { useDebounce } from "use-debounce";
 import useFetch from "react-fetch-hook";
 import { ScaleLoader } from "react-spinners";
 import { usePlaylist, Video } from "components/Atoms/Playlist";
-import { getEndpoint } from "components/YoutubeAPI";
+import { getEndpoint, YTApiResponse } from "components/YoutubeAPI";
 import cx from "classnames";
 
 function Input(props) {
@@ -69,7 +69,7 @@ export function Search(props) {
 
   const validQuery = actual.length > 3 && query.length > 3;
 
-  const { isLoading, data } = useFetch(endpoint.href, {
+  const { isLoading, data } = useFetch<YTApiResponse>(endpoint.href, {
     depends: [validQuery],
   });
 

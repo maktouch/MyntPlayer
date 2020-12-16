@@ -1,3 +1,9 @@
+import { Video } from "components/Atoms/Playlist";
+
+export type YTApiResponse = {
+  items: Video[];
+};
+
 export function getEndpoint() {
   const endpoint = new URL("https://youtube.googleapis.com/youtube/v3/search");
   endpoint.searchParams.append("part", "snippet");
