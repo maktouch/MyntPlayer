@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.app {
+  display: grid;
+  grid-template-areas:
+    "topbar sidebar"
+    "player sidebar";
+
+  grid-template-rows: 29px 1fr;
+  grid-template-columns: 1fr 420px;
+  position: relative;
+
+  min-height: calc(100vh - 2.5rem);
+}
+
+.topbar {
+  grid-area: topbar;
+}
+
+.player {
+  grid-area: player;
+}
+
+.sidebar {
+  grid-area: sidebar;
+}
