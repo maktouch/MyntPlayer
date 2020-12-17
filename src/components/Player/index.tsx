@@ -19,7 +19,7 @@ export function Player(props) {
     playerVars: {
       autoplay: 1,
       showinfo: 0,
-      controls: 0,
+      controls: 1,
       rel: 0,
       modestbranding: 1,
       fs: 0,
